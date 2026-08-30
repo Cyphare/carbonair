@@ -6,4 +6,4 @@ AB to Z
 
 - Ketua Kelompok:
 - Anggota 1:
-- Anggota 2:
+- Anggota 2: Johannes De Deo Dimas Aryobimo-24/540351/TK/59948
