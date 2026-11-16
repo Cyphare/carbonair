@@ -14,6 +14,7 @@ namespace CarbonAirWpf
         private string _currentUser = "user1";
         private string _selectedEnergyType = "Listrik";
         private readonly EmissionService _emissionService;
+        private readonly AqiService _aqiService;
 
         private readonly SolidColorBrush _activeBg = new SolidColorBrush(Color.FromRgb(0x14, 0x26, 0x30));
         private readonly SolidColorBrush _activeBorder = new SolidColorBrush(Color.FromRgb(0x00, 0xB4, 0xD8));
@@ -30,6 +31,7 @@ namespace CarbonAirWpf
             InitializeComponent();
             _currentUser = string.IsNullOrWhiteSpace(username) ? "user1" : username.Trim();
             _emissionService = new EmissionService();
+            _aqiService = new AqiService();
             LoadUserData();
         }
 
@@ -42,26 +44,29 @@ namespace CarbonAirWpf
             txtPengaturanEmail.Text = $"{_currentUser.ToLower()}@carbonair.local";
             txtPengaturanRole.Text = _currentUser.Equals("user1", StringComparison.OrdinalIgnoreCase) ? "Pengguna Utama" : "Pengguna Sekunder";
 
-            // Data grafik tren & indikator AQI
+            // Data grafik tren & indikator AQI (menggunakan AqiService polimorfis)
             bool isUser2 = _currentUser.Equals("user2", StringComparison.OrdinalIgnoreCase);
+            int currentAqi = isUser2 ? 85 : 72;
+            AqiEvaluator evaluator = _aqiService.EvaluateAqi(currentAqi);
+
+            txtDashboardAqi.Text = evaluator.AqiScore.ToString();
+            txtDashboardStatus.Text = evaluator.GetStatusLabel();
+            txtDashboardStatus.ToolTip = evaluator.GetAirQualityAdvice();
+
             if (isUser2)
             {
-                txtDashboardAqi.Text = "85";
                 txtDashboardAqiSub.Text = " Sedang";
                 txtDashboardAqiSub.Foreground = new SolidColorBrush(Color.FromRgb(241, 196, 15));
                 txtDashboardAngin.Text = "11";
-                txtDashboardStatus.Text = "Waspada";
                 txtDashboardStatus.Foreground = new SolidColorBrush(Color.FromRgb(241, 196, 15));
                 pathChartStroke.Data = Geometry.Parse("M 0,145 C 130,145 220,130 320,85 C 410,50 460,20 520,20 C 580,20 620,55 690,75 C 740,90 770,110 800,115");
                 pathChartFill.Data = Geometry.Parse("M 0,145 C 130,145 220,130 320,85 C 410,50 460,20 520,20 C 580,20 620,55 690,75 C 740,90 770,110 800,115 L 800,190 L 0,190 Z");
             }
             else
             {
-                txtDashboardAqi.Text = "72";
                 txtDashboardAqiSub.Text = " Baik";
                 txtDashboardAqiSub.Foreground = new SolidColorBrush(Color.FromRgb(46, 204, 113));
                 txtDashboardAngin.Text = "14";
-                txtDashboardStatus.Text = "Aman";
                 txtDashboardStatus.Foreground = new SolidColorBrush(Color.FromRgb(46, 204, 113));
                 pathChartStroke.Data = Geometry.Parse("M 0,165 C 140,165 240,150 340,115 C 430,80 470,35 530,35 C 590,35 630,65 690,85 C 740,100 760,115 800,125");
                 pathChartFill.Data = Geometry.Parse("M 0,165 C 140,165 240,150 340,115 C 430,80 470,35 530,35 C 590,35 630,65 690,85 C 740,100 760,115 800,125 L 800,190 L 0,190 Z");
