@@ -52,6 +52,7 @@ namespace CarbonAirWpf
             txtDashboardAqi.Text = evaluator.AqiScore.ToString();
             txtDashboardStatus.Text = evaluator.GetStatusLabel();
             txtDashboardStatus.ToolTip = evaluator.GetAirQualityAdvice();
+            txtAqiAdvice.Text = evaluator.GetAirQualityAdvice();
 
             if (isUser2)
             {
@@ -59,6 +60,8 @@ namespace CarbonAirWpf
                 txtDashboardAqiSub.Foreground = new SolidColorBrush(Color.FromRgb(241, 196, 15));
                 txtDashboardAngin.Text = "11";
                 txtDashboardStatus.Foreground = new SolidColorBrush(Color.FromRgb(241, 196, 15));
+                iconAqiAdvice.Fill = new SolidColorBrush(Color.FromRgb(241, 196, 15));
+                borderAqiAdvice.BorderBrush = new SolidColorBrush(Color.FromRgb(0x40, 0x36, 0x16));
                 pathChartStroke.Data = Geometry.Parse("M 0,145 C 130,145 220,130 320,85 C 410,50 460,20 520,20 C 580,20 620,55 690,75 C 740,90 770,110 800,115");
                 pathChartFill.Data = Geometry.Parse("M 0,145 C 130,145 220,130 320,85 C 410,50 460,20 520,20 C 580,20 620,55 690,75 C 740,90 770,110 800,115 L 800,190 L 0,190 Z");
             }
@@ -68,6 +71,8 @@ namespace CarbonAirWpf
                 txtDashboardAqiSub.Foreground = new SolidColorBrush(Color.FromRgb(46, 204, 113));
                 txtDashboardAngin.Text = "14";
                 txtDashboardStatus.Foreground = new SolidColorBrush(Color.FromRgb(46, 204, 113));
+                iconAqiAdvice.Fill = new SolidColorBrush(Color.FromRgb(46, 204, 113));
+                borderAqiAdvice.BorderBrush = new SolidColorBrush(Color.FromRgb(0x1C, 0x2E, 0x37));
                 pathChartStroke.Data = Geometry.Parse("M 0,165 C 140,165 240,150 340,115 C 430,80 470,35 530,35 C 590,35 630,65 690,85 C 740,100 760,115 800,125");
                 pathChartFill.Data = Geometry.Parse("M 0,165 C 140,165 240,150 340,115 C 430,80 470,35 530,35 C 590,35 630,65 690,85 C 740,100 760,115 800,125 L 800,190 L 0,190 Z");
             }
@@ -105,6 +110,7 @@ namespace CarbonAirWpf
             Grid grid = new Grid { VerticalAlignment = VerticalAlignment.Center };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(42) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             bool isListrik = log.EnergyType.Equals("Listrik", StringComparison.OrdinalIgnoreCase);
@@ -164,9 +170,32 @@ namespace CarbonAirWpf
             };
             Grid.SetColumn(txtVal, 2);
 
+            Button btnDel = new Button
+            {
+                Content = "Hapus",
+                Margin = new Thickness(12, 0, 0, 0),
+                Padding = new Thickness(8, 3, 8, 3),
+                FontSize = 11,
+                Foreground = new SolidColorBrush(Color.FromRgb(0xE7, 0x4C, 0x3C)),
+                Background = new SolidColorBrush(Color.FromRgb(0x25, 0x16, 0x16)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0x55, 0x22, 0x22)),
+                BorderThickness = new Thickness(1),
+                Cursor = Cursors.Hand,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            btnDel.Click += (s, e) =>
+            {
+                if (_emissionService.DeleteLog(log.Id))
+                {
+                    LoadUserData();
+                }
+            };
+            Grid.SetColumn(btnDel, 3);
+
             grid.Children.Add(iconBox);
             grid.Children.Add(sp);
             grid.Children.Add(txtVal);
+            grid.Children.Add(btnDel);
             card.Child = grid;
 
             return card;
@@ -292,6 +321,22 @@ namespace CarbonAirWpf
             borderNavPengaturan.BorderBrush = (index == 3) ? _activeBorder : _inactiveBorder;
             iconNavPengaturan.Fill = (index == 3) ? _activeText : _inactiveText;
             textNavPengaturan.Foreground = (index == 3) ? _activeText : _inactiveText;
+        }
+
+        private void btnNotifikasiPolusi_Click(object sender, RoutedEventArgs e)
+        {
+            int currentAqi = _currentUser.Equals("user2", StringComparison.OrdinalIgnoreCase) ? 85 : 72;
+            NotificationBase notification = _aqiService.CreateNotification(_currentUser, currentAqi);
+            string msg = notification.BuildMessage(currentAqi);
+
+            MessageBox.Show(msg, "Notifikasi Desktop Polusi", MessageBoxButton.OK,
+                currentAqi <= 75 ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void btnSimpanPengaturan_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show($"Pengaturan untuk akun '{_currentUser}' berhasil disimpan.", 
+                            "Pengaturan Disimpan", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void btnLogout_Click(object sender, RoutedEventArgs e)

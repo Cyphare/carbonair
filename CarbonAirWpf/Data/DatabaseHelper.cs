@@ -132,5 +132,26 @@ namespace CarbonAirWpf.Data
                 return false;
             }
         }
+
+        // PostgreSQL: Query Delete Log
+        public bool DeleteEmissionLogFromDb(int id)
+        {
+            try
+            {
+                using var conn = new NpgsqlConnection(ConnectionString);
+                conn.Open();
+
+                string query = "DELETE FROM emission_logs WHERE id = @id";
+                using var cmd = new NpgsqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("id", id);
+
+                return cmd.ExecuteNonQuery() > 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DeleteEmissionLog Error]: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

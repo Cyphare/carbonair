@@ -51,5 +51,11 @@ namespace CarbonAirWpf.Services
         {
             return _dbHelper.GetEmissionLogsFromDb(username);
         }
+
+        // PostgreSQL
+        public bool DeleteLog(int id)
+        {
+            return _dbHelper.DeleteEmissionLogFromDb(id);
+        }
     }
 }

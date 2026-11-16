@@ -15,5 +15,16 @@ namespace CarbonAirWpf.Services
 
             return new ModerateAqiEvaluator(aqiScore);
         }
+
+        // Polymorphism
+        public NotificationBase CreateNotification(string recipient, int aqiScore)
+        {
+            if (aqiScore <= 75)
+            {
+                return new SafeNotification(recipient);
+            }
+
+            return new WarningNotification(recipient);
+        }
     }
 }
