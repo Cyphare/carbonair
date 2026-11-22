@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Worksheet Modul 10 — Minimum Viable Product (CarbonAir MVP v1.0)</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #1f2937;
+    background: #f3f6f9;
+    margin: 0;
+    padding: 24px;
+    line-height: 1.45;
+    font-size: 10.5pt;
+  }
+  .page {
+    max-width: 900px;
+    margin: 0 auto 24px auto;
+    background: #ffffff;
+    padding: 28px 34px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  }
+  .banner {
+    background: #2f5597;
+    color: #ffffff;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 13pt;
+    letter-spacing: 0.3px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .subbanner {
+    background: #d9e2f3;
+    color: #1f3864;
+    padding: 7px 12px;
+    font-weight: 700;
+    font-size: 10.5pt;
+    border-left: 4px solid #2f5597;
+    margin: 18px 0 10px 0;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .meta-grid p { margin: 3px 0; font-size: 9.8pt; }
+  h2 { font-size: 12pt; color: #1f3864; margin: 16px 0 8px 0; }
+  h3 { font-size: 10.5pt; color: #2f5597; margin: 12px 0 6px 0; }
+  ul, ol { margin: 6px 0 10px 20px; padding: 0; }
+  li { margin-bottom: 4px; }
+  code {
+    background: #eef2f7;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: Consolas, monospace;
+    font-size: 9.2pt;
+    color: #0f172a;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: Consolas, monospace;
+    font-size: 8.8pt;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    margin-bottom: 14px;
+    font-size: 9.2pt;
+  }
+  th, td {
+    border: 1px solid #475569;
+    padding: 6px 8px;
+    vertical-align: top;
+  }
+  th {
+    background: #e2e8f0;
+    color: #0f172a;
+    font-weight: 700;
+    text-align: center;
+  }
+  .section-row td {
+    background: #edf2f7;
+    font-weight: 700;
+    color: #1f3864;
+  }
+  .center { text-align: center; }
+  .check { font-weight: 700; color: #15803d; }
+  .page-break { page-break-before: always; }
+  @media print {
+    body { background: #ffffff; padding: 0; }
+    .page { box-shadow: none; margin: 0; padding: 0; max-width: none; border-radius: 0; }
+    .no-print { display: none; }
+  }
+  .print-btn {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    background: #2f5597;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body>
+<button class="print-btn no-print" onclick="window.print()">Cetak / Simpan PDF</button>
+
+<div class="page">
+  <div class="banner">MODUL 10 : MINIMUM VIABLE PRODUCT — TUGAS KELOMPOK</div>
+
+  <div class="meta-grid">
+    <div>
+      <p><strong>Mata Kuliah:</strong> Junior Project (Teknik Basis Data &amp; PBO)</p>
+      <p><strong>Nama Aplikasi:</strong> CarbonAir MVP v1.0 (.NET 10 WPF Desktop)</p>
+      <p><strong>Kelompok:</strong> AB to Z</p>
+      <p><strong>Tanggal Pengujian:</strong> 22 November 2026</p>
+    </div>
+    <div>
+      <p><strong>Ketua:</strong> Arnold Gavrael Bonardo Situmorang (24/539797/TK/59872)</p>
+      <p><strong>Anggota 1:</strong> Zakhrova Salsabila (24/534625/TK/59268)</p>
+      <p><strong>Anggota 2:</strong> Johannes De Deo Dimas Aryobimo (24/540351/TK/59948)</p>
+      <p><strong>Repository:</strong> github.com/Cyphare/carbonair</p>
+    </div>
+  </div>
+
+  <div class="subbanner">1. FINALISASI APLIKASI &amp; INTEGRASI LAYANAN WEB REST API</div>
+  <p>Aplikasi desktop <strong>CarbonAir</strong> telah difinalisasi dari prototipe awal menjadi Minimum Viable Product (MVP v1.0) siap pakai dengan arsitektur berorientasi objek (Encapsulation, Inheritance, Polymorphism), penyimpanan data ganda (<strong>SQLite otomatis &amp; PostgreSQL server</strong>), serta integrasi langsung layanan pihak ketiga <strong>Open-Meteo Web REST API</strong>:</p>
+  <ul>
+    <li><strong>Open-Meteo Air Quality REST API</strong> (<code>https://air-quality-api.open-meteo.com/v1/air-quality</code>): Mengambil US AQI <em>real-time</em>, kadar polutan <code>PM2.5</code>, <code>PM10</code>, <code>CO</code>, <code>NO₂</code>, <code>O₃</code>, grafik tren AQI 24 jam per jam, serta pemantauan serentak (<em>batch</em>) <strong>12 kota Indonesia</strong> pada Peta AQI interaktif.</li>
+    <li><strong>Open-Meteo Weather REST API</strong> (<code>https://api.open-meteo.com/v1/forecast</code>): Mengambil suhu udara, kecepatan angin, dan kelembapan secara paralel.</li>
+    <li><strong>Open-Meteo Geocoding REST API</strong> (<code>https://geocoding-api.open-meteo.com/v1/search</code>): Pencarian kota kustom secara langsung dari Dashboard.</li>
+    <li><strong>Layanan Inti &amp; Nilai Tambah MVP:</strong> Registrasi akun baru, manajemen profil &amp; ubah password, CRUD penuh Log Energi &amp; Emisi (Tambah, Edit, Hapus, Filter Listrik/BBM, Ekspor CSV), Rekomendasi Cerdas berbasis AQI &amp; emisi, serta Notifikasi <em>Toast</em> Peringatan Bahaya Polusi di Desktop.</li>
+  </ul>
+
+  <div class="subbanner">2. PENGEMASAN, INSTALASI &amp; KONFIGURASI BASIS DATA</div>
+  <ol>
+    <li><strong>Paket Aplikasi Mandiri (.exe):</strong> Aplikasi dikemas dalam folder rilis <code>CarbonAir-v1.0-win-x64</code> berisi <code>CarbonAir.exe</code> (<em>self-contained single-file</em>), <code>appsettings.json</code>, <code>setup.bat</code>, <code>database/</code>, dan <code>docs/</code>.</li>
+    <li><strong>Zero-Config SQLite (Default):</strong> Cukup ekstrak ZIP dan klik dua kali <code>CarbonAir.exe</code> (atau jalankan <code>setup.bat</code> pilihan <code>1</code>). File <code>carbonair.db</code> beserta tabel <code>users</code>, <code>emission_logs</code>, akun demo (<code>user1/user1</code> Admin, <code>user2/user2</code> Regular), dan data sampel otomatis dibuat.</li>
+    <li><strong>Mode PostgreSQL (Opsional Server):</strong> Klik tombol <code>Konfigurasi DB</code> pada layar Login atau <code>Pengaturan → Atur Database...</code> (atau <code>setup.bat</code> pilihan <code>2</code>), pilih <code>PostgreSQL (Server)</code>, masukkan Host/Port/Database/Username/Password, klik <code>Tes Koneksi</code>, lalu <code>Simpan &amp; Terapkan</code>.</li>
+  </ol>
+
+  <div class="subbanner">3. PANDUAN SINGKAT PENGGUNAAN APLIKASI</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:22%">Halaman / Menu</th>
+        <th>Alur Penggunaan Utama</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Login &amp; Daftar</strong></td>
+        <td>Masuk memakai akun demo (<code>user1</code>/<code>user1</code> atau <code>user2</code>/<code>user2</code>), buat akun baru lewat <em>Daftar di sini</em>, atau ubah konfigurasi database lewat <em>Konfigurasi DB</em>.</td>
+      </tr>
+      <tr>
+        <td><strong>Dashboard</strong></td>
+        <td>Pilih kota preset atau cari kota baru lewat API; amati KPI AQI, total emisi, cuaca/angin, grafik tren 24 jam dinamis, konsentrasi 5 polutan, dan rekomendasi cerdas.</td>
+      </tr>
+      <tr>
+        <td><strong>Peta AQI</strong></td>
+        <td>Lihat status 12 stasiun kota di peta Indonesia berkode warna EPA; klik salah satu pin kota untuk melihat detail dan tekan <em>Pantau di Dashboard</em>.</td>
+      </tr>
+      <tr>
+        <td><strong>Log Energi</strong></td>
+        <td>Pilih Listrik (<code>0.85 kg/kWh</code>) atau BBM (<code>2.30 kg/L</code>), masukkan jumlah (estimasi CO₂ tampil langsung) &amp; tanggal, simpan, edit/hapus riwayat, saring, atau ekspor ke <code>.csv</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>Pengaturan</strong></td>
+        <td>Ubah email, kota default, password, satuan emisi (<code>kg</code>/<code>ton</code>), interval auto-refresh API, tes koneksi REST API, dan uji/atur ambang batas notifikasi polusi desktop.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="page page-break">
+  <div class="banner">LAB 10.2 : FUNCTIONAL TESTING (BLACK BOX TESTING)</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th colspan="2">Nama Aplikasi: CarbonAir MVP v1.0</th>
+        <th colspan="2">Tanggal Pengujian: 22 November 2026<br>Tester: Kelompok AB to Z</th>
+        <th></th>
+      </tr>
+      <tr>
+        <th style="width:5%" rowspan="2">No.</th>
+        <th style="width:17%" rowspan="2">Halaman Yang Diuji</th>
+        <th style="width:23%" rowspan="2">Aksi Aktor</th>
+        <th colspan="2">Reaksi Sistem</th>
+        <th style="width:15%" rowspan="2">Hasil</th>
+      </tr>
+      <tr>
+        <th style="width:20%">Benar</th>
+        <th style="width:20%">Salah</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="section-row"><td colspan="6">A. Halaman Autentikasi, Registrasi &amp; Konfigurasi Database</td></tr>
+      <tr>
+        <td class="center">1.</td>
+        <td>Login Valid</td>
+        <td>Memasukkan username dan password valid (<code>user1</code>/<code>user1</code>) lalu klik Login.</td>
+        <td>Menampilkan pesan selamat datang polimorfis sesuai peran dan masuk ke DashboardWindow.</td>
+        <td>Gagal login atau menampilkan pesan error padahal akun benar.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">2.</td>
+        <td>Login Tidak Valid</td>
+        <td>Memasukkan password salah atau mengosongkan kolom input lalu klik Login.</td>
+        <td>Menolak akses dan menampilkan pesan peringatan/error yang sesuai.</td>
+        <td>Berhasil masuk ke Dashboard atau aplikasi mengalami crash.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">3.</td>
+        <td>Registrasi Akun</td>
+        <td>Klik <em>Daftar di sini</em>, isi data lengkap &amp; konfirmasi password cocok, lalu klik Daftar Akun.</td>
+        <td>Akun tersimpan ke database sebagai <code>Pengguna Biasa</code> dan kembali ke form Login.</td>
+        <td>Data gagal disimpan atau menerima username duplikat.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">4.</td>
+        <td>Konfigurasi DB</td>
+        <td>Klik <em>Konfigurasi DB</em>, pilih SQLite/PostgreSQL, klik <em>Tes Koneksi</em> lalu <em>Simpan &amp; Terapkan</em>.</td>
+        <td>Menampilkan hasil tes akurat, menyimpan ke <code>appsettings.json</code>, dan menginisialisasi skema tabel.</td>
+        <td>Koneksi tidak teruji atau pengaturan tidak tersimpan.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+
+      <tr class="section-row"><td colspan="6">B. Halaman Dashboard &amp; Web REST API (Open-Meteo)</td></tr>
+      <tr>
+        <td class="center">5.</td>
+        <td>Muat Data API Awal</td>
+        <td>Membuka Dashboard setelah login berhasil.</td>
+        <td>Menampilkan data live AQI, polutan, suhu, angin, grafik tren 24 jam, serta indikator <code>Live API</code>.</td>
+        <td>Kartu menampilkan placeholder N/A atau gagal memuat grafik.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">6.</td>
+        <td>Pilih &amp; Cari Kota</td>
+        <td>Memilih kota dari dropdown atau mencari nama kota (mis. <code>Bandung</code>) lalu klik <em>Cari Kota</em>.</td>
+        <td>Seluruh KPI, grafik 24 jam, detail polutan, dan rekomendasi diperbarui sesuai kota.</td>
+        <td>Data tidak berubah atau aplikasi error saat kota tidak ditemukan.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">7.</td>
+        <td>Refresh &amp; Offline Mode</td>
+        <td>Menekan <em>Refresh API</em> saat online maupun saat koneksi internet dimatikan.</td>
+        <td>Online memperbarui data; offline menampilkan status <code>Offline Mode</code> dan fallback aman tanpa crash.</td>
+        <td>Unhandled exception / aplikasi tertutup paksa ketika offline.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+
+      <tr class="section-row"><td colspan="6">C. Halaman Peta Kualitas Udara (Peta AQI Indonesia)</td></tr>
+      <tr>
+        <td class="center">8.</td>
+        <td>Peta 12 Stasiun</td>
+        <td>Membuka tab <em>Peta AQI</em> atau menekan <em>Muat Ulang Peta</em>.</td>
+        <td>Menampilkan 12 pin kota pada peta Indonesia berwarna US EPA serta status <code>12 / 12 Online</code>.</td>
+        <td>Pin stasiun tidak tampil atau masih menampilkan label <code>N/A</code>.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">9.</td>
+        <td>Detail &amp; Pantau Kota</td>
+        <td>Mengklik salah satu pin kota di peta lalu klik <em>Pantau di Dashboard</em>.</td>
+        <td>Panel bawah menampilkan detail lengkap stasiun dan navigasi membuka kota tersebut di Dashboard.</td>
+        <td>Panel detail tidak merespons klik atau kota tidak berpindah.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+
+      <tr class="section-row"><td colspan="6">D. Halaman Log Energi &amp; Emisi Karbon</td></tr>
+      <tr>
+        <td class="center">10.</td>
+        <td>Catat Emisi Baru</td>
+        <td>Pilih Listrik/BBM, masukkan jumlah &gt; 0 dan tanggal <code>YYYY-MM-DD</code>, klik <em>+ Catat Jejak Karbon</em>.</td>
+        <td>Menghitung CO₂ secara polimorfis, menyimpan ke DB, dan memperbarui total emisi.</td>
+        <td>Nilai emisi salah, tidak tersimpan, atau menerima jumlah ≤ 0.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">11.</td>
+        <td>Edit &amp; Hapus Emisi</td>
+        <td>Klik <em>Edit</em> untuk ubah nilai dan simpan; klik <em>Hapus</em> dan konfirmasi Ya.</td>
+        <td>Catatan terperbarui/terhapus di database dan total emisi otomatis dihitung ulang.</td>
+        <td>Data tidak berubah/terhapus di DB atau tombol tidak bekerja.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">12.</td>
+        <td>Filter &amp; Ekspor CSV</td>
+        <td>Mengklik filter <code>Semua</code>/<code>Listrik</code>/<code>BBM</code> lalu klik <em>Ekspor CSV</em>.</td>
+        <td>Daftar tersaring akurat dan file <code>.csv</code> terbentuk lengkap di lokasi pilihan pengguna.</td>
+        <td>Filter tidak sesuai atau gagal mengekspor file CSV.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">13.</td>
+        <td>Kontrol Peran User</td>
+        <td>Membandingkan tab Log Energi saat login sebagai Admin (<code>user1</code>) vs Regular (<code>user2</code>).</td>
+        <td><code>user1</code> memiliki dropdown switcher user; <code>user2</code> hanya melihat log miliknya sendiri.</td>
+        <td>Pengguna biasa dapat mengakses/mengubah data pengguna lain.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+
+      <tr class="section-row"><td colspan="6">E. Halaman Pengaturan, Notifikasi Desktop, &amp; Logout</td></tr>
+      <tr>
+        <td class="center">14.</td>
+        <td>Simpan Pengaturan</td>
+        <td>Ubah email, kota default, satuan (<code>kg</code>/<code>ton</code>), interval refresh, dan klik <em>Simpan Pengaturan</em>.</td>
+        <td>Profil diperbarui di DB, konfigurasi disimpan ke <code>appsettings.json</code>, tampilan satuan langsung berubah.</td>
+        <td>Perubahan tidak tersimpan atau tampilan tidak ter-update.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">15.</td>
+        <td>Ubah Password &amp; Tes API</td>
+        <td>Ubah password akun dan tekan tombol <em>Tes API</em>.</td>
+        <td>Password baru tersimpan bila password lama cocok; Tes API menampilkan latensi Open-Meteo (ms).</td>
+        <td>Password lama salah diterima atau Tes API gagal merespons.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">16.</td>
+        <td>Notifikasi Polusi Desktop</td>
+        <td>Klik <em>Uji Notifikasi</em> atau pantau kota dengan AQI ≥ ambang batas aktif.</td>
+        <td>Jendela peringatan non-blocking tampil di kanan bawah layar dan menutup otomatis setelah 8 detik.</td>
+        <td>Notifikasi tidak muncul atau mengunci interaksi jendela utama.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+      <tr>
+        <td class="center">17.</td>
+        <td>Logout</td>
+        <td>Mengklik tombol <em>Keluar</em> di sidebar kiri bawah.</td>
+        <td>Menghentikan timer refresh, menutup Dashboard, dan kembali ke halaman Login.</td>
+        <td>Dashboard gagal ditutup atau gagal kembali ke halaman Login.</td>
+        <td><span class="check">Sesuai ( ✓ )</span><br>Tidak Sesuai ( &nbsp; )</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:9pt; color:#475569; margin-top:8px;">
+    <strong>Verifikasi Tambahan (Automated Testing):</strong> 19/19 unit &amp; integration tests (<code>CarbonAir.Tests</code> dengan xUnit pada konfigurasi Release) dinyatakan <strong>LULUS (0 Gagal)</strong> meliputi kalkulator emisi polimorfis, CRUD SQLite terisolasi, autentikasi/registrasi, ekspor CSV, serta koneksi langsung &amp; simulasi offline Open-Meteo REST API.
+  </p>
+</div>
+</body>
+</html>

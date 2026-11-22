@@ -5,11 +5,12 @@ namespace CarbonAirWpf.Models
     {
         public override string EnergyType => "BBM";
         public override double EmissionFactor => 2.30;
+        public override string Unit => "L";
 
         // Polymorphism
         public override double CalculateCo2(double amount)
         {
-            return amount * EmissionFactor;
+            return amount < 0 ? 0 : amount * EmissionFactor;
         }
     }
 }

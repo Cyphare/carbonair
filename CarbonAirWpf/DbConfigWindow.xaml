@@ -1,0 +1,148 @@
+<Window x:Class="CarbonAirWpf.DbConfigWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CarbonAir - Konfigurasi Database"
+        Width="490" SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B1317">
+    <Border Margin="22" CornerRadius="12" Background="#111D23" BorderBrush="#1C2E37" BorderThickness="1" Padding="24">
+        <StackPanel>
+            <!-- Header -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <Border Width="32" Height="32" CornerRadius="8" Background="#142630" BorderBrush="#00B4D8" BorderThickness="1" Margin="0,0,10,0">
+                    <Path Width="15" Height="15" Stretch="Uniform" Fill="#00E5FF" HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Data="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.35 6 2s-2.13 2-6 2-6-1.35-6-2 2.13-2 6-2zm0 14c-3.87 0-6-1.35-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V17c0 .65-2.13 2-6 2zm0-5c-3.87 0-6-1.35-6-2V9.77C7.61 10.55 9.72 11 12 11s4.39-.45 6-1.23V12c0 .65-2.13 2-6 2z"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Konfigurasi Koneksi Database" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Pilih SQLite lokal (otomatis) atau server PostgreSQL." FontSize="11.5" Foreground="#8E9FA8"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Provider -->
+            <TextBlock Text="Mode Penyimpanan Database" FontSize="12" Foreground="#A0B2BC" Margin="0,14,0,6"/>
+            <ComboBox x:Name="cbProvider" SelectionChanged="cbProvider_SelectionChanged" Margin="0,0,0,16">
+                <ComboBoxItem Content="SQLite (Lokal Otomatis)" Tag="SQLite"/>
+                <ComboBoxItem Content="PostgreSQL (Server)" Tag="PostgreSQL"/>
+            </ComboBox>
+
+            <!-- SQLite Panel -->
+            <StackPanel x:Name="panelSqlite" Visibility="Visible">
+                <TextBlock Text="Nama / Path File Database SQLite" FontSize="12" Foreground="#A0B2BC" Margin="0,0,0,6"/>
+                <Border CornerRadius="8" Background="#0B1418" BorderBrush="#1C2E37" BorderThickness="1" Height="40" Margin="0,0,0,8">
+                    <TextBox x:Name="tbSqlitePath" Background="Transparent" Foreground="White" BorderThickness="0"
+                             Padding="12,0" VerticalContentAlignment="Center" FontSize="13" CaretBrush="White"/>
+                </Border>
+                <TextBlock Text="File .db dibuat otomatis di folder aplikasi apabila belum ada." FontSize="11" Foreground="#657984" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- PostgreSQL Panel -->
+            <StackPanel x:Name="panelPostgres" Visibility="Collapsed">
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Host Server" FontSize="12" Foreground="#A0B2BC" Margin="0,0,0,6"/>
+                        <Border CornerRadius="8" Background="#0B1418" BorderBrush="#1C2E37" BorderThickness="1" Height="38">
+                            <TextBox x:Name="tbPgHost" Background="Transparent" Foreground="White" BorderThickness="0"
+                                     Padding="12,0" VerticalContentAlignment="Center" FontSize="13" CaretBrush="White"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Port" FontSize="12" Foreground="#A0B2BC" Margin="0,0,0,6"/>
+                        <Border CornerRadius="8" Background="#0B1418" BorderBrush="#1C2E37" BorderThickness="1" Height="38">
+                            <TextBox x:Name="tbPgPort" Background="Transparent" Foreground="White" BorderThickness="0"
+                                     Padding="12,0" VerticalContentAlignment="Center" FontSize="13" CaretBrush="White"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Nama Database" FontSize="12" Foreground="#A0B2BC" Margin="0,0,0,6"/>
+                <Border CornerRadius="8" Background="#0B1418" BorderBrush="#1C2E37" BorderThickness="1" Height="38" Margin="0,0,0,12">
+                    <TextBox x:Name="tbPgDatabase" Background="Transparent" Foreground="White" BorderThickness="0"
+                             Padding="12,0" VerticalContentAlignment="Center" FontSize="13" CaretBrush="White"/>
+                </Border>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Username" FontSize="12" Foreground="#A0B2BC" Margin="0,0,0,6"/>
+                        <Border CornerRadius="8" Background="#0B1418" BorderBrush="#1C2E37" BorderThickness="1" Height="38">
+                            <TextBox x:Name="tbPgUsername" Background="Transparent" Foreground="White" BorderThickness="0"
+                                     Padding="12,0" VerticalContentAlignment="Center" FontSize="13" CaretBrush="White"/>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Password" FontSize="12" Foreground="#A0B2BC" Margin="0,0,0,6"/>
+                        <Border CornerRadius="8" Background="#0B1418" BorderBrush="#1C2E37" BorderThickness="1" Height="38">
+                            <PasswordBox x:Name="tbPgPassword" Background="Transparent" Foreground="White" BorderThickness="0"
+                                         Padding="12,0" VerticalContentAlignment="Center" FontSize="13" CaretBrush="White"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- Status Box -->
+            <Border x:Name="borderDbTestStatus" Visibility="Collapsed" CornerRadius="8"
+                    Background="#0B1418" BorderBrush="#1C2E37" BorderThickness="1" Padding="12,9" Margin="0,16,0,0">
+                <TextBlock x:Name="txtDbTestStatus" FontSize="11.5" TextWrapping="Wrap" Foreground="#8E9FA8"/>
+            </Border>
+
+            <!-- Action Buttons -->
+            <Grid Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="btnTestDb" Grid.Column="0" Click="btnTestDb_Click" Cursor="Hand" Height="38" Padding="14,0"
+                        Background="#142630" Foreground="#00E5FF" BorderBrush="#00B4D8" BorderThickness="1">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Padding="14,0">
+                                <TextBlock Text="Tes Koneksi" Foreground="#00E5FF" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <Button x:Name="btnCancelDb" Grid.Column="2" Click="btnCancelDb_Click" Cursor="Hand" Height="38">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border CornerRadius="8" Background="#161E24" BorderBrush="#263842" BorderThickness="1" Padding="16,0">
+                                <TextBlock Text="Batal" Foreground="#A0B2BC" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <Button x:Name="btnSaveDb" Grid.Column="4" Click="btnSaveDb_Click" Cursor="Hand" Height="38">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border CornerRadius="8" Padding="18,0">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#00D2FF" Offset="0"/>
+                                        <GradientStop Color="#007BFF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="Simpan &amp; Terapkan" Foreground="White" FontWeight="Bold" FontSize="12.5" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

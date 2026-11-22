@@ -1,10 +1,12 @@
 namespace CarbonAirWpf.Models
 {
-    // Encapsulation
+    // Encapsulation & Abstraction
     public abstract class Account
     {
         private string _username = string.Empty;
         private string _role = string.Empty;
+        private string _email = string.Empty;
+        private string _city = "Yogyakarta";
 
         public string Username
         {
@@ -17,6 +19,22 @@ namespace CarbonAirWpf.Models
             get => _role;
             set => _role = string.IsNullOrWhiteSpace(value) ? "User" : value.Trim();
         }
+
+        public string Email
+        {
+            get => _email;
+            set => _email = string.IsNullOrWhiteSpace(value)
+                ? $"{_username.ToLowerInvariant()}@carbonair.local"
+                : value.Trim();
+        }
+
+        public string City
+        {
+            get => _city;
+            set => _city = string.IsNullOrWhiteSpace(value) ? "Yogyakarta" : value.Trim();
+        }
+
+        public abstract bool CanManageAllUsers { get; }
 
         // Polymorphism
         public abstract string GetWelcomeMessage();

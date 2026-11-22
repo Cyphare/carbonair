@@ -2,20 +2,31 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <AssemblyName>CarbonAir</AssemblyName>
+    <RootNamespace>CarbonAirWpf</RootNamespace>
+    <Product>CarbonAir</Product>
+    <Version>1.0.0</Version>
+    <Authors>Kelompok AB to Z (Arnold, Zakhrova, Johannes)</Authors>
+    <Description>Aplikasi Desktop Pemantau Kualitas Udara &amp; Pelacak Jejak Karbon Terintegrasi REST API</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="map_indonesia_clean.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Resource Include="map_indonesia_clean.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="7.0.7" />
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+    <PackageReference Include="Npgsql" Version="9.0.2" />
   </ItemGroup>
 
 </Project>
