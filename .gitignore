@@ -30,8 +30,7 @@ desktop.ini
 ## Local practice folder (not part of CarbonAir)
 Chapter7/
 
-## Release packaging & local SQLite databases
-Release/
+## Local SQLite databases
 *.db
 *.db-shm
 *.db-wal
