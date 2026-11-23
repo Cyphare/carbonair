@@ -169,17 +169,19 @@ namespace CarbonAirWpf.Services
 
             sb.Append(' ');
 
+            string totalStr = totalCo2Kg.ToString("F1", CultureInfo.InvariantCulture);
+
             if (totalCo2Kg <= 20)
             {
-                sb.Append($"Jejak karbon tercatat Anda ({totalCo2Kg:F1} kg CO₂) masih rendah — pertahankan efisiensi listrik & transportasi ramah lingkungan.");
+                sb.Append($"Jejak karbon tercatat Anda ({totalStr} kg CO₂) masih rendah — pertahankan efisiensi listrik & transportasi ramah lingkungan.");
             }
             else if (totalCo2Kg <= 60)
             {
-                sb.Append($"Total emisi Anda mencapai {totalCo2Kg:F1} kg CO₂. Pertimbangkan mematikan perangkat standby dan menggabungkan rute perjalanan BBM.");
+                sb.Append($"Total emisi Anda mencapai {totalStr} kg CO₂. Pertimbangkan mematikan perangkat standby dan menggabungkan rute perjalanan BBM.");
             }
             else
             {
-                sb.Append($"Total emisi Anda tinggi ({totalCo2Kg:F1} kg CO₂). Prioritaskan transportasi publik, pengurangan konsumsi BBM, dan audit penggunaan AC/listrik harian.");
+                sb.Append($"Total emisi Anda tinggi ({totalStr} kg CO₂). Prioritaskan transportasi publik, pengurangan konsumsi BBM, dan audit penggunaan AC/listrik harian.");
             }
 
             return sb.ToString();

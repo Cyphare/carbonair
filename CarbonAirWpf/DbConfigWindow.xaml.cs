@@ -65,12 +65,11 @@ namespace CarbonAirWpf
         private void ShowStatus(bool ok, string message)
         {
             borderDbTestStatus.Visibility = Visibility.Visible;
+            borderDbTestStatus.Background = new SolidColorBrush(Color.FromRgb(0xF4, 0xF6, 0xF8));
             borderDbTestStatus.BorderBrush = new SolidColorBrush(ok
-                ? Color.FromRgb(0x2E, 0xCC, 0x71)
-                : Color.FromRgb(0xE7, 0x4C, 0x3C));
-            txtDbTestStatus.Foreground = new SolidColorBrush(ok
-                ? Color.FromRgb(0x2E, 0xCC, 0x71)
-                : Color.FromRgb(0xFF, 0x6B, 0x6B));
+                ? Color.FromRgb(0x0F, 0x76, 0x6E)
+                : Color.FromRgb(0x11, 0x18, 0x27));
+            txtDbTestStatus.Foreground = new SolidColorBrush(Color.FromRgb(0x11, 0x18, 0x27));
             txtDbTestStatus.Text = message;
         }
 

@@ -37,12 +37,10 @@ namespace CarbonAirWpf
 
         private readonly DispatcherTimer _autoRefreshTimer;
 
-        private readonly SolidColorBrush _activeBg = new(Color.FromRgb(0x14, 0x26, 0x30));
-        private readonly SolidColorBrush _activeBorder = new(Color.FromRgb(0x00, 0xB4, 0xD8));
-        private readonly SolidColorBrush _activeText = new(Color.FromRgb(0x00, 0xE5, 0xFF));
+        private readonly SolidColorBrush _activeBg = Brushes.White;
+        private readonly SolidColorBrush _activeText = new(Color.FromRgb(0x0F, 0x76, 0x6E));
         private readonly SolidColorBrush _inactiveBg = Brushes.Transparent;
-        private readonly SolidColorBrush _inactiveBorder = Brushes.Transparent;
-        private readonly SolidColorBrush _inactiveText = new(Color.FromRgb(0x8E, 0x9F, 0xA8));
+        private readonly SolidColorBrush _inactiveText = new(Color.FromRgb(0x37, 0x41, 0x51));
 
         public DashboardWindow() : this(new AdminAccount("user1", "Pengguna Utama", "user1@carbonair.local", "Yogyakarta")) { }
 
@@ -174,36 +172,55 @@ namespace CarbonAirWpf
 
         private async Task RefreshCityAirQualityAsync(bool showAlertToast)
         {
-            txtApiStatus.Text = "Mengambil API...";
-            dotApiStatus.Fill = new SolidColorBrush(Color.FromRgb(0xF1, 0xC4, 0x0F));
-
-            AirQualityData data = await _apiService.GetCityAirQualityAsync(_activeCity);
-            _currentCityAqi = data;
-
-            ApplyAirQualityToDashboard(data);
-
-            if (showAlertToast)
+            SetRefreshButtonBusy(true);
+            try
             {
-                CheckAndShowPollutionAlert(data);
+                AirQualityData data = await _apiService.GetCityAirQualityAsync(_activeCity);
+                _currentCityAqi = data;
+
+                ApplyAirQualityToDashboard(data);
+
+                if (showAlertToast)
+                {
+                    CheckAndShowPollutionAlert(data);
+                }
+            }
+            finally
+            {
+                SetRefreshButtonBusy(false);
+            }
+        }
+
+        private void SetRefreshButtonBusy(bool busy)
+        {
+            btnRefreshApi.IsEnabled = !busy;
+            if (btnRefreshApi.Template?.FindName("txtBtnRefreshApi", btnRefreshApi) is TextBlock tb)
+            {
+                tb.Text = busy ? "Memuat..." : "Refresh";
             }
         }
 
         private void ApplyAirQualityToDashboard(AirQualityData data)
         {
-            Color accent = ParseColorOrDefault(data.ColorHex, Color.FromRgb(0x2E, 0xCC, 0x71));
+            Color accent = GetMonochromeTextAccent(data.AqiIndex);
             var accentBrush = new SolidColorBrush(accent);
+            var chartAccent = Color.FromRgb(0x0F, 0x76, 0x6E);
 
             txtDashboardAqi.Text = data.AqiIndex.ToString(CultureInfo.InvariantCulture);
             txtDashboardAqiSub.Text = $" {data.Category}";
             txtDashboardAqiSub.Foreground = accentBrush;
-            txtDashboardPollutant.Text = $"Polutan utama: {data.MainPollutant}";
+            txtDashboardPollutant.Text = data.MainPollutant;
 
             txtDashboardAngin.Text = data.WindSpeed.ToString("F1", CultureInfo.InvariantCulture);
-            txtDashboardWeatherSub.Text = $"{data.Temperature:F1}°C • Lembap {data.Humidity:F0}%";
+            txtDashboardWeatherSub.Text = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0:F1}°C • {1:F0}%",
+                data.Temperature,
+                data.Humidity);
 
             txtDashboardStatus.Text = data.StatusLabel;
             txtDashboardStatus.Foreground = accentBrush;
-            txtDashboardStatusSub.Text = $"di {data.CityName}";
+            txtDashboardStatusSub.Text = data.CityName;
 
             txtPolPm25.Text = data.Pm25.ToString("F1", CultureInfo.InvariantCulture);
             txtPolPm10.Text = data.Pm10.ToString("F1", CultureInfo.InvariantCulture);
@@ -211,31 +228,15 @@ namespace CarbonAirWpf
             txtPolNo2.Text = data.No2.ToString("F1", CultureInfo.InvariantCulture);
             txtPolO3.Text = data.Ozone.ToString("F1", CultureInfo.InvariantCulture);
 
-            txtChartTitle.Text = $"Tren Kualitas Udara (AQI) {data.CityName} - 24 Jam Terakhir";
-            RenderHourlyChart(data.HourlyAqi, accent);
+            txtChartTitle.Text = $"Tren AQI 24 Jam — {data.CityName}";
+            RenderHourlyChart(data.HourlyAqi, chartAccent);
 
             txtRecommendation.Text = _emissionService.GenerateRecommendation(data, _currentUserTotalCo2Kg);
-
-            if (data.IsFromLiveApi)
-            {
-                dotApiStatus.Fill = new SolidColorBrush(Color.FromRgb(0x2E, 0xCC, 0x71));
-                txtApiStatus.Text = $"Live API • {data.FetchedAt:HH:mm}";
-                txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(0x2E, 0xCC, 0x71));
-                txtApiStatus.ToolTip = "Data real-time dari Open-Meteo Air Quality & Weather REST API";
-            }
-            else
-            {
-                dotApiStatus.Fill = new SolidColorBrush(Color.FromRgb(0xE6, 0x7E, 0x22));
-                txtApiStatus.Text = "Offline Mode";
-                txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(0xE6, 0x7E, 0x22));
-                txtApiStatus.ToolTip = data.ErrorMessage;
-            }
 
             int threshold = AppConfigManager.Current.Api.AqiAlertThreshold;
             if (AppConfigManager.Current.Api.EnablePollutionAlert && data.AqiIndex >= threshold)
             {
                 bannerPollutionAlert.Visibility = Visibility.Visible;
-                bannerPollutionAlert.BorderBrush = accentBrush;
                 txtBannerAlertTitle.Text = $"Peringatan Polusi di {data.CityName} — AQI {data.AqiIndex} ({data.Category})";
                 txtBannerAlertBody.Text = data.HealthAdvice;
             }
@@ -297,7 +298,7 @@ namespace CarbonAirWpf
             {
                 double x = i * stepX;
                 double ratio = Math.Clamp((double)points[i].Aqi / yMax, 0.0, 1.0);
-                double y = height - (ratio * (height - 12.0)) - 4.0;
+                double y = height * (1.0 - ratio);
                 coords.Add(new Point(x, y));
             }
 
@@ -321,6 +322,11 @@ namespace CarbonAirWpf
 
             pathChartStroke.Stroke = new SolidColorBrush(accentColor);
             pathChartStroke.Data = new PathGeometry(new[] { strokeFigure });
+            pathChartFill.Fill = new LinearGradientBrush(
+                Color.FromArgb(36, accentColor.R, accentColor.G, accentColor.B),
+                Color.FromArgb(0, 255, 255, 255),
+                new Point(0, 0),
+                new Point(0, 1));
             pathChartFill.Data = new PathGeometry(new[] { fillFigure });
 
             var lastPt = coords[^1];
@@ -330,7 +336,7 @@ namespace CarbonAirWpf
                 Height = 9,
                 Fill = new SolidColorBrush(accentColor),
                 Stroke = Brushes.White,
-                StrokeThickness = 1.5
+                StrokeThickness = 2
             };
             Canvas.SetLeft(endDot, lastPt.X - 4.5);
             Canvas.SetTop(endDot, lastPt.Y - 4.5);
@@ -346,14 +352,8 @@ namespace CarbonAirWpf
 
         private async Task RefreshMapStationsAsync()
         {
-            txtMapStatusBadge.Text = "Stasiun Pemantau Aktif: Memuat API...";
             _mapStations = await _apiService.GetIndonesiaStationsAsync();
             RenderMapPins();
-
-            int onlineCount = _mapStations.Count(s => s.IsFromLiveApi);
-            txtMapStatusBadge.Text = onlineCount > 0
-                ? $"Stasiun Pemantau Aktif: {onlineCount} / {_mapStations.Count} Online (Open-Meteo API)"
-                : $"Stasiun Pemantau: Mode Offline ({_mapStations.Count} Fallback)";
 
             var defaultStation = _mapStations.FirstOrDefault(s =>
                 s.CityName.Equals(_activeCity.Name, StringComparison.OrdinalIgnoreCase)) ?? _mapStations.FirstOrDefault();
@@ -370,8 +370,27 @@ namespace CarbonAirWpf
 
             foreach (var station in _mapStations)
             {
-                Color color = ParseColorOrDefault(station.ColorHex, Color.FromRgb(0x2E, 0xCC, 0x71));
-                var brush = new SolidColorBrush(color);
+                var (bgColor, fgColor) = GetMonochromeAqiColors(station.AqiIndex);
+                var bgBrush = new SolidColorBrush(bgColor);
+                var fgBrush = new SolidColorBrush(fgColor);
+
+                bool labelAbove = station.CityName is "Jakarta" or "Semarang" or "Surabaya";
+                double dx = station.CityName switch
+                {
+                    "Jakarta" => -7,
+                    "Bandung" => 7,
+                    "Surabaya" => 4,
+                    _ => 0
+                };
+                double dy = station.CityName switch
+                {
+                    "Jakarta" => -6,
+                    "Bandung" => 6,
+                    "Semarang" => -7,
+                    "Yogyakarta" => 7,
+                    "Surabaya" => -3,
+                    _ => 0
+                };
 
                 var container = new StackPanel
                 {
@@ -382,20 +401,20 @@ namespace CarbonAirWpf
 
                 var pinBorder = new Border
                 {
-                    Width = 34,
-                    Height = 34,
-                    CornerRadius = new CornerRadius(17),
-                    Background = new SolidColorBrush(Color.FromArgb(235, 17, 29, 35)),
-                    BorderBrush = brush,
-                    BorderThickness = new Thickness(2.5),
+                    Width = 26,
+                    Height = 26,
+                    CornerRadius = new CornerRadius(13),
+                    Background = bgBrush,
+                    BorderBrush = bgColor.R > 180 ? new SolidColorBrush(Color.FromRgb(0x0F, 0x76, 0x6E)) : Brushes.Transparent,
+                    BorderThickness = new Thickness(bgColor.R > 180 ? 1 : 0),
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
 
                 pinBorder.Child = new TextBlock
                 {
                     Text = station.AqiIndex.ToString(CultureInfo.InvariantCulture),
-                    Foreground = Brushes.White,
-                    FontSize = 11.5,
+                    Foreground = fgBrush,
+                    FontSize = 10.5,
                     FontWeight = FontWeights.Bold,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
@@ -404,42 +423,53 @@ namespace CarbonAirWpf
                 var labelBg = new Border
                 {
                     CornerRadius = new CornerRadius(4),
-                    Background = new SolidColorBrush(Color.FromArgb(205, 11, 19, 23)),
+                    Background = new SolidColorBrush(Color.FromArgb(245, 255, 255, 255)),
                     Padding = new Thickness(5, 1, 5, 1),
-                    Margin = new Thickness(0, 2, 0, 0),
+                    Margin = labelAbove ? new Thickness(0, 0, 0, 2) : new Thickness(0, 2, 0, 0),
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 labelBg.Child = new TextBlock
                 {
                     Text = station.CityName,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0xE6, 0xF1, 0xF5)),
-                    FontSize = 10,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x11, 0x18, 0x27)),
+                    FontSize = 9.5,
                     FontWeight = FontWeights.SemiBold
                 };
 
-                container.Children.Add(pinBorder);
-                container.Children.Add(labelBg);
+                if (labelAbove)
+                {
+                    container.Children.Add(labelBg);
+                    container.Children.Add(pinBorder);
+                }
+                else
+                {
+                    container.Children.Add(pinBorder);
+                    container.Children.Add(labelBg);
+                }
 
                 var captured = station;
                 container.MouseLeftButtonDown += (_, _) => SelectMapStation(captured);
 
-                Canvas.SetLeft(container, station.MapX - 24);
-                Canvas.SetTop(container, station.MapY - 17);
+                Canvas.SetLeft(container, station.MapX + dx - 24);
+                Canvas.SetTop(container, station.MapY + dy - (labelAbove ? 32 : 13));
                 canvasMapPins.Children.Add(container);
             }
         }
 
         private void SelectMapStation(AirQualityData station)
         {
-            Color accent = ParseColorOrDefault(station.ColorHex, Color.FromRgb(0x2E, 0xCC, 0x71));
-            var brush = new SolidColorBrush(accent);
+            var (bgColor, fgColor) = GetMonochromeAqiColors(station.AqiIndex);
 
-            borderStationBadge.BorderBrush = brush;
+            borderStationBadge.Background = new SolidColorBrush(bgColor);
+            borderStationBadge.BorderBrush = bgColor.R > 180 ? new SolidColorBrush(Color.FromRgb(0x0F, 0x76, 0x6E)) : Brushes.Transparent;
+            borderStationBadge.BorderThickness = new Thickness(bgColor.R > 180 ? 1 : 0);
+            txtStationAqi.Foreground = new SolidColorBrush(fgColor);
+            txtStationAqiLabel.Foreground = new SolidColorBrush(fgColor);
             txtStationAqi.Text = station.AqiIndex.ToString(CultureInfo.InvariantCulture);
             txtStationTitle.Text = station.CityName;
             txtStationProvince.Text = $"({station.Province})";
             txtStationCategory.Text = $"• {station.Category}";
-            txtStationCategory.Foreground = brush;
+            txtStationCategory.Foreground = new SolidColorBrush(GetMonochromeTextAccent(station.AqiIndex));
 
             txtStationMetrics.Text = string.Format(
                 CultureInfo.InvariantCulture,
@@ -458,7 +488,7 @@ namespace CarbonAirWpf
             _currentUserTotalCo2Kg = allUserLogs.Sum(l => l.Co2);
 
             txtDashboardTotalEmisi.Text = EmissionRecord.FormatTotalCo2(_currentUserTotalCo2Kg, unit);
-            txtDashboardLogCount.Text = $"{allUserLogs.Count} catatan tercatat";
+            txtDashboardLogCount.Text = $"{allUserLogs.Count} catatan";
 
             List<EmissionRecord> filteredLogs = _selectedLogFilter == "Semua"
                 ? allUserLogs
@@ -472,15 +502,11 @@ namespace CarbonAirWpf
             {
                 panelDaftarEmisi.Children.Add(new Border
                 {
-                    CornerRadius = new CornerRadius(8),
-                    Background = new SolidColorBrush(Color.FromRgb(0x0E, 0x17, 0x1C)),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(0x1A, 0x2A, 0x33)),
-                    BorderThickness = new Thickness(1),
-                    Padding = new Thickness(20),
+                    Padding = new Thickness(12, 24, 12, 24),
                     Child = new TextBlock
                     {
                         Text = $"Belum ada catatan emisi ({_selectedLogFilter}) untuk pengguna '{_activeLogUser}'.",
-                        Foreground = new SolidColorBrush(Color.FromRgb(0x65, 0x79, 0x84)),
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x52, 0x52, 0x5B)),
                         FontSize = 12.5,
                         HorizontalAlignment = HorizontalAlignment.Center
                     }
@@ -502,78 +528,49 @@ namespace CarbonAirWpf
 
         private Border CreateEmissionCard(EmissionRecord log, string unit)
         {
-            Border card = new Border
+            Border row = new Border
             {
-                CornerRadius = new CornerRadius(8),
-                Background = new SolidColorBrush(Color.FromRgb(0x0E, 0x17, 0x1C)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(0x1A, 0x2A, 0x33)),
-                BorderThickness = new Thickness(1),
-                MinHeight = 64,
-                Margin = new Thickness(0, 0, 0, 10),
-                Padding = new Thickness(14, 10, 14, 10)
+                Background = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0xEA, 0xEC, 0xEF)),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Padding = new Thickness(2, 13, 2, 13)
             };
 
             Grid grid = new Grid { VerticalAlignment = VerticalAlignment.Center };
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(42) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            bool isListrik = log.EnergyType.Equals("Listrik", StringComparison.OrdinalIgnoreCase);
-
-            Border iconBox = new Border
-            {
-                Width = 36,
-                Height = 36,
-                CornerRadius = new CornerRadius(6),
-                Background = new SolidColorBrush(isListrik ? Color.FromRgb(0x23, 0x20, 0x14) : Color.FromRgb(0x25, 0x16, 0x16)),
-                HorizontalAlignment = HorizontalAlignment.Left
-            };
-            iconBox.Child = new Path
-            {
-                Width = 14,
-                Height = 14,
-                Stretch = Stretch.Uniform,
-                Fill = new SolidColorBrush(isListrik ? Color.FromRgb(0xF1, 0xC4, 0x0F) : Color.FromRgb(0xE7, 0x4C, 0x3C)),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Data = Geometry.Parse(isListrik
-                    ? "M7 2v11h3v9l7-12h-4l4-8z"
-                    : "M19 5h-2V3H7v18h10v-2h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-4 14H9V5h6v14zm4-4h-2V7h2v8z")
-            };
-            Grid.SetColumn(iconBox, 0);
-
             StackPanel sp = new StackPanel
             {
-                Margin = new Thickness(8, 0, 0, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
             sp.Children.Add(new TextBlock
             {
                 Text = log.EnergyType,
                 FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.White
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x11, 0x18, 0x27))
             });
             sp.Children.Add(new TextBlock
             {
                 Text = $"{log.Date} • {log.FormattedAmount}",
-                FontSize = 11,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x65, 0x79, 0x84)),
+                FontSize = 11.5,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x52, 0x52, 0x5B)),
                 Margin = new Thickness(0, 2, 0, 0)
             });
-            Grid.SetColumn(sp, 1);
+            Grid.SetColumn(sp, 0);
 
             TextBlock txtVal = new TextBlock
             {
                 Text = log.FormatCo2(unit),
                 FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xD2, 0xFF)),
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x11, 0x18, 0x27)),
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 12, 0)
+                Margin = new Thickness(0, 0, 18, 0)
             };
-            Grid.SetColumn(txtVal, 2);
+            Grid.SetColumn(txtVal, 1);
 
             StackPanel actions = new StackPanel
             {
@@ -581,45 +578,43 @@ namespace CarbonAirWpf
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            Button btnEdit = CreateSmallActionButton("Edit", Color.FromRgb(0x00, 0xB4, 0xD8), Color.FromRgb(0x14, 0x26, 0x30));
-            btnEdit.Margin = new Thickness(0, 0, 6, 0);
+            Button btnEdit = CreateSmallActionButton("Edit", Color.FromRgb(0x0F, 0x76, 0x6E));
+            btnEdit.Margin = new Thickness(0, 0, 12, 0);
             btnEdit.Click += (_, _) => BeginEditRecord(log);
 
-            Button btnDelete = CreateSmallActionButton("Hapus", Color.FromRgb(0xE7, 0x4C, 0x3C), Color.FromRgb(0x2A, 0x14, 0x14));
+            Button btnDelete = CreateSmallActionButton("Hapus", Color.FromRgb(0x52, 0x52, 0x5B));
             btnDelete.Click += (_, _) => DeleteRecord(log);
 
             actions.Children.Add(btnEdit);
             actions.Children.Add(btnDelete);
-            Grid.SetColumn(actions, 3);
+            Grid.SetColumn(actions, 2);
 
-            grid.Children.Add(iconBox);
             grid.Children.Add(sp);
             grid.Children.Add(txtVal);
             grid.Children.Add(actions);
-            card.Child = grid;
+            row.Child = grid;
 
-            return card;
+            return row;
         }
 
-        private static Button CreateSmallActionButton(string label, Color fg, Color bg)
+        private static Button CreateSmallActionButton(string label, Color fg)
         {
             var btn = new Button
             {
                 Cursor = Cursors.Hand,
-                Height = 26
+                Height = 26,
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0)
             };
 
             var factory = new FrameworkElementFactory(typeof(Border));
-            factory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
-            factory.SetValue(Border.BackgroundProperty, new SolidColorBrush(bg));
-            factory.SetValue(Border.BorderBrushProperty, new SolidColorBrush(fg));
-            factory.SetValue(Border.BorderThicknessProperty, new Thickness(1));
-            factory.SetValue(Border.PaddingProperty, new Thickness(8, 0, 8, 0));
+            factory.SetValue(Border.BackgroundProperty, Brushes.Transparent);
+            factory.SetValue(Border.PaddingProperty, new Thickness(2, 0, 2, 0));
 
             var textFactory = new FrameworkElementFactory(typeof(TextBlock));
             textFactory.SetValue(TextBlock.TextProperty, label);
             textFactory.SetValue(TextBlock.ForegroundProperty, new SolidColorBrush(fg));
-            textFactory.SetValue(TextBlock.FontSizeProperty, 10.5);
+            textFactory.SetValue(TextBlock.FontSizeProperty, 12.0);
             textFactory.SetValue(TextBlock.FontWeightProperty, FontWeights.SemiBold);
             textFactory.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
 
@@ -657,7 +652,7 @@ namespace CarbonAirWpf
             txtFormModeTitle.Text = "Input Konsumsi";
             if (btnCatatJejak.Template?.FindName("txtBtnCatatJejak", btnCatatJejak) is TextBlock tb)
             {
-                tb.Text = "+ Catat Jejak Karbon";
+                tb.Text = "+ Catat Jejak";
             }
             btnCancelEdit.Visibility = Visibility.Collapsed;
             tbTanggalKonsumsi.Text = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -697,15 +692,17 @@ namespace CarbonAirWpf
             _selectedEnergyType = energyType;
             bool isListrik = energyType.Equals("Listrik", StringComparison.OrdinalIgnoreCase);
 
-            borderEnergyListrik.Background = new SolidColorBrush(isListrik ? Color.FromRgb(0x14, 0x2C, 0x33) : Color.FromRgb(0x0B, 0x14, 0x18));
-            borderEnergyListrik.BorderBrush = new SolidColorBrush(isListrik ? Color.FromRgb(0x00, 0xB4, 0xD8) : Color.FromRgb(0x1C, 0x2E, 0x37));
-            iconEnergyListrik.Fill = new SolidColorBrush(isListrik ? Color.FromRgb(0x00, 0xE5, 0xFF) : Color.FromRgb(0x65, 0x79, 0x84));
-            txtEnergyListrik.Foreground = new SolidColorBrush(isListrik ? Color.FromRgb(0x00, 0xE5, 0xFF) : Color.FromRgb(0x8E, 0x9F, 0xA8));
+            var activeBg = new SolidColorBrush(Color.FromRgb(0x0F, 0x76, 0x6E));
+            var inactiveBg = new SolidColorBrush(Color.FromRgb(0xE2, 0xE7, 0xEC));
+            var inactiveFg = new SolidColorBrush(Color.FromRgb(0x11, 0x18, 0x27));
 
-            borderEnergyBbm.Background = new SolidColorBrush(!isListrik ? Color.FromRgb(0x14, 0x2C, 0x33) : Color.FromRgb(0x0B, 0x14, 0x18));
-            borderEnergyBbm.BorderBrush = new SolidColorBrush(!isListrik ? Color.FromRgb(0x00, 0xB4, 0xD8) : Color.FromRgb(0x1C, 0x2E, 0x37));
-            iconEnergyBbm.Fill = new SolidColorBrush(!isListrik ? Color.FromRgb(0x00, 0xE5, 0xFF) : Color.FromRgb(0x65, 0x79, 0x84));
-            txtEnergyBbm.Foreground = new SolidColorBrush(!isListrik ? Color.FromRgb(0x00, 0xE5, 0xFF) : Color.FromRgb(0x8E, 0x9F, 0xA8));
+            borderEnergyListrik.Background = isListrik ? activeBg : inactiveBg;
+            txtEnergyListrik.Foreground = isListrik ? Brushes.White : inactiveFg;
+            txtEnergyListrik.FontWeight = isListrik ? FontWeights.SemiBold : FontWeights.Normal;
+
+            borderEnergyBbm.Background = !isListrik ? activeBg : inactiveBg;
+            txtEnergyBbm.Foreground = !isListrik ? Brushes.White : inactiveFg;
+            txtEnergyBbm.FontWeight = !isListrik ? FontWeights.SemiBold : FontWeights.Normal;
 
             lblSatuanKonsumsi.Text = isListrik ? "Jumlah (kWh)" : "Jumlah (L)";
             UpdateLiveCo2Preview();
@@ -727,14 +724,14 @@ namespace CarbonAirWpf
                 double co2 = calc.CalculateCo2(amount);
                 txtLiveCo2Preview.Text = string.Format(
                     CultureInfo.InvariantCulture,
-                    "Estimasi: +{0:F2} kg CO₂ (Faktor: {1:F2} kg/{2})",
-                    co2, calc.EmissionFactor, calc.Unit);
+                    "Estimasi: +{0:F2} kg CO₂",
+                    co2);
             }
             else
             {
                 txtLiveCo2Preview.Text = string.Format(
                     CultureInfo.InvariantCulture,
-                    "Masukkan angka > 0 (Faktor {0}: {1:F2} kg/{2})",
+                    "Faktor {0}: {1:F2} kg/{2}",
                     calc.EnergyType, calc.EmissionFactor, calc.Unit);
             }
         }
@@ -773,12 +770,16 @@ namespace CarbonAirWpf
                 double co2 = calc.CalculateCo2(amount);
 
                 MessageBox.Show(
-                    $"{(isEditing ? "Perubahan Jejak Karbon Disimpan!" : "Jejak Karbon Berhasil Dihitung & Disimpan!")}\n\n" +
-                    $"Pengguna: {_activeLogUser}\n" +
-                    $"Jenis Energi: {calc.EnergyType}\n" +
-                    $"Jumlah: {amount:0.##} {calc.Unit}\n" +
-                    $"Faktor Emisi: {calc.EmissionFactor:F2} kg/{calc.Unit}\n" +
-                    $"Hasil Emisi: +{co2:F2} kg CO₂",
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0}\n\nPengguna: {1}\nJenis Energi: {2}\nJumlah: {3:0.##} {4}\nFaktor Emisi: {5:F2} kg/{4}\nHasil Emisi: +{6:F2} kg CO₂",
+                        isEditing ? "Perubahan Jejak Karbon Disimpan!" : "Jejak Karbon Berhasil Dihitung & Disimpan!",
+                        _activeLogUser,
+                        calc.EnergyType,
+                        amount,
+                        calc.Unit,
+                        calc.EmissionFactor,
+                        co2),
                     isEditing ? "Update Emisi Sukses" : "Kalkulasi Polimorfis Sukses",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -817,9 +818,12 @@ namespace CarbonAirWpf
 
         private static void UpdateFilterPill(Border border, TextBlock text, bool active)
         {
-            border.Background = new SolidColorBrush(active ? Color.FromRgb(0x14, 0x2C, 0x33) : Color.FromRgb(0x0B, 0x14, 0x18));
-            border.BorderBrush = new SolidColorBrush(active ? Color.FromRgb(0x00, 0xB4, 0xD8) : Color.FromRgb(0x1C, 0x2E, 0x37));
-            text.Foreground = new SolidColorBrush(active ? Color.FromRgb(0x00, 0xE5, 0xFF) : Color.FromRgb(0x8E, 0x9F, 0xA8));
+            border.BorderBrush = active
+                ? new SolidColorBrush(Color.FromRgb(0x0F, 0x76, 0x6E))
+                : Brushes.Transparent;
+            text.Foreground = active
+                ? new SolidColorBrush(Color.FromRgb(0x0F, 0x76, 0x6E))
+                : new SolidColorBrush(Color.FromRgb(0x52, 0x52, 0x5B));
             text.FontWeight = active ? FontWeights.SemiBold : FontWeights.Normal;
         }
 
@@ -881,19 +885,25 @@ namespace CarbonAirWpf
                 return;
             }
 
-            txtApiStatus.Text = $"Mencari '{query}'...";
-            CityLocation? found = await _apiService.SearchCityAsync(query);
-
-            if (found == null)
+            btnSearchCity.IsEnabled = false;
+            try
             {
-                MessageBox.Show($"Kota '{query}' tidak ditemukan melalui Open-Meteo Geocoding API atau koneksi sedang offline.",
-                                "Kota Tidak Ditemukan", MessageBoxButton.OK, MessageBoxImage.Warning);
-                if (_currentCityAqi != null) ApplyAirQualityToDashboard(_currentCityAqi);
-                return;
-            }
+                CityLocation? found = await _apiService.SearchCityAsync(query);
 
-            _activeCity = found;
-            await RefreshCityAirQualityAsync(showAlertToast: true);
+                if (found == null)
+                {
+                    MessageBox.Show($"Kota '{query}' tidak ditemukan melalui Open-Meteo Geocoding API atau koneksi sedang offline.",
+                                    "Kota Tidak Ditemukan", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                _activeCity = found;
+                await RefreshCityAirQualityAsync(showAlertToast: true);
+            }
+            finally
+            {
+                btnSearchCity.IsEnabled = true;
+            }
         }
 
         private async void btnRefreshApi_Click(object sender, RoutedEventArgs e)
@@ -930,15 +940,17 @@ namespace CarbonAirWpf
 
         private async void btnTestApi_Click(object sender, RoutedEventArgs e)
         {
-            txtSettingsApiStatus.Text = "Menguji koneksi Open-Meteo...";
-            txtSettingsApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(0xF1, 0xC4, 0x0F));
-
-            var (success, message) = await _apiService.TestConnectionAsync();
-            txtSettingsApiStatus.Text = success ? "Open-Meteo REST API Aktif (Terhubung)" : "Koneksi API Gagal / Offline";
-            txtSettingsApiStatus.Foreground = new SolidColorBrush(success ? Color.FromRgb(0x2E, 0xCC, 0x71) : Color.FromRgb(0xFF, 0x6B, 0x6B));
-
-            MessageBox.Show(message, success ? "Tes Koneksi API Berhasil" : "Tes Koneksi API Gagal",
-                            MessageBoxButton.OK, success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            btnTestApi.IsEnabled = false;
+            try
+            {
+                var (success, message) = await _apiService.TestConnectionAsync();
+                MessageBox.Show(message, success ? "Tes Koneksi API Berhasil" : "Tes Koneksi API Gagal",
+                                MessageBoxButton.OK, success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            }
+            finally
+            {
+                btnTestApi.IsEnabled = true;
+            }
         }
 
         private void btnTestAlert_Click(object sender, RoutedEventArgs e)
@@ -1059,24 +1071,28 @@ namespace CarbonAirWpf
             panelPengaturan.Visibility = (index == 3) ? Visibility.Visible : Visibility.Collapsed;
 
             borderNavDashboard.Background = (index == 0) ? _activeBg : _inactiveBg;
-            borderNavDashboard.BorderBrush = (index == 0) ? _activeBorder : _inactiveBorder;
+            barNavDashboard.Visibility = (index == 0) ? Visibility.Visible : Visibility.Collapsed;
             iconNavDashboard.Fill = (index == 0) ? _activeText : _inactiveText;
             textNavDashboard.Foreground = (index == 0) ? _activeText : _inactiveText;
+            textNavDashboard.FontWeight = (index == 0) ? FontWeights.SemiBold : FontWeights.Normal;
 
             borderNavPetaAqi.Background = (index == 1) ? _activeBg : _inactiveBg;
-            borderNavPetaAqi.BorderBrush = (index == 1) ? _activeBorder : _inactiveBorder;
+            barNavPetaAqi.Visibility = (index == 1) ? Visibility.Visible : Visibility.Collapsed;
             iconNavPetaAqi.Fill = (index == 1) ? _activeText : _inactiveText;
             textNavPetaAqi.Foreground = (index == 1) ? _activeText : _inactiveText;
+            textNavPetaAqi.FontWeight = (index == 1) ? FontWeights.SemiBold : FontWeights.Normal;
 
             borderNavLogEnergi.Background = (index == 2) ? _activeBg : _inactiveBg;
-            borderNavLogEnergi.BorderBrush = (index == 2) ? _activeBorder : _inactiveBorder;
+            barNavLogEnergi.Visibility = (index == 2) ? Visibility.Visible : Visibility.Collapsed;
             iconNavLogEnergi.Fill = (index == 2) ? _activeText : _inactiveText;
             textNavLogEnergi.Foreground = (index == 2) ? _activeText : _inactiveText;
+            textNavLogEnergi.FontWeight = (index == 2) ? FontWeights.SemiBold : FontWeights.Normal;
 
             borderNavPengaturan.Background = (index == 3) ? _activeBg : _inactiveBg;
-            borderNavPengaturan.BorderBrush = (index == 3) ? _activeBorder : _inactiveBorder;
+            barNavPengaturan.Visibility = (index == 3) ? Visibility.Visible : Visibility.Collapsed;
             iconNavPengaturan.Fill = (index == 3) ? _activeText : _inactiveText;
             textNavPengaturan.Foreground = (index == 3) ? _activeText : _inactiveText;
+            textNavPengaturan.FontWeight = (index == 3) ? FontWeights.SemiBold : FontWeights.Normal;
         }
 
         private void btnLogout_Click(object sender, RoutedEventArgs e)
@@ -1087,16 +1103,20 @@ namespace CarbonAirWpf
             Close();
         }
 
-        private static Color ParseColorOrDefault(string hex, Color fallback)
+        private static (Color Bg, Color Fg) GetMonochromeAqiColors(int aqi)
         {
-            try
-            {
-                return (Color)ColorConverter.ConvertFromString(hex);
-            }
-            catch
-            {
-                return fallback;
-            }
+            if (aqi <= 50) return (Color.FromRgb(0xD1, 0xEC, 0xE7), Color.FromRgb(0x11, 0x5E, 0x59));
+            if (aqi <= 100) return (Color.FromRgb(0x0F, 0x76, 0x6E), Colors.White);
+            if (aqi <= 150) return (Color.FromRgb(0x11, 0x5E, 0x59), Colors.White);
+            if (aqi <= 200) return (Color.FromRgb(0x13, 0x4E, 0x4A), Colors.White);
+            return (Color.FromRgb(0x11, 0x18, 0x27), Colors.White);
+        }
+
+        private static Color GetMonochromeTextAccent(int aqi)
+        {
+            if (aqi <= 150) return Color.FromRgb(0x0F, 0x76, 0x6E);
+            if (aqi <= 200) return Color.FromRgb(0x13, 0x4E, 0x4A);
+            return Color.FromRgb(0x11, 0x18, 0x27);
         }
     }
 }

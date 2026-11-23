@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <!-- Dark ComboBoxItem -->
+        <!-- Monochrome ComboBoxItem with Single Teal Accent -->
         <Style TargetType="{x:Type ComboBoxItem}">
-            <Setter Property="Foreground" Value="#E6F1F5"/>
-            <Setter Property="Background" Value="#111D23"/>
-            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -17,12 +17,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#142C33"/>
-                                <Setter Property="Foreground" Value="#00E5FF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#F2F4F7"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#173842"/>
-                                <Setter Property="Foreground" Value="#00E5FF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#E6F4F1"/>
+                                <Setter Property="Foreground" Value="#0F766E"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -30,13 +30,12 @@
             </Setter>
         </Style>
 
-        <!-- Dark ComboBox -->
+        <!-- High-Contrast Flat ComboBox -->
         <Style TargetType="{x:Type ComboBox}">
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#0B1418"/>
-            <Setter Property="BorderBrush" Value="#1C2E37"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="Background" Value="#EBEEF2"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="Height" Value="38"/>
             <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -51,23 +50,22 @@
                                 <ToggleButton.Template>
                                     <ControlTemplate TargetType="ToggleButton">
                                         <Border x:Name="Border"
-                                                CornerRadius="8"
-                                                Background="#0B1418"
-                                                BorderBrush="#1C2E37"
-                                                BorderThickness="1">
-                                            <Grid Margin="10,0">
+                                                CornerRadius="6"
+                                                Background="#EBEEF2"
+                                                BorderThickness="0">
+                                            <Grid Margin="12,0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="18"/>
+                                                    <ColumnDefinition Width="16"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Path Grid.Column="1" Width="9" Height="6" Stretch="Uniform" Fill="#8E9FA8"
+                                                <Path Grid.Column="1" Width="9" Height="6" Stretch="Uniform" Fill="#374151"
                                                       HorizontalAlignment="Right" VerticalAlignment="Center"
                                                       Data="M0,0 L4,4 L8,0 Z"/>
                                             </Grid>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Border" Property="BorderBrush" Value="#00B4D8"/>
+                                                <Setter TargetName="Border" Property="Background" Value="#DCE1E8"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -91,12 +89,14 @@
                                       MinWidth="{TemplateBinding ActualWidth}"
                                       MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                     <Border x:Name="DropDownBorder"
-                                            Background="#111D23"
-                                            BorderBrush="#00B4D8"
-                                            BorderThickness="1"
-                                            CornerRadius="8"
-                                            Margin="0,3,0,0">
-                                        <ScrollViewer Margin="2,4" SnapsToDevicePixels="True">
+                                            Background="#FFFFFF"
+                                            BorderThickness="0"
+                                            CornerRadius="6"
+                                            Margin="6,4,6,8">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="14" Color="#111827" Opacity="0.16" ShadowDepth="4"/>
+                                        </Border.Effect>
+                                        <ScrollViewer Margin="0,4" SnapsToDevicePixels="True">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
                                         </ScrollViewer>
                                     </Border>
@@ -108,20 +108,20 @@
             </Setter>
         </Style>
 
-        <!-- Dark CheckBox -->
+        <!-- High-Contrast Flat CheckBox -->
         <Style TargetType="{x:Type CheckBox}">
-            <Setter Property="Foreground" Value="#E6F1F5"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
             <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type CheckBox}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border x:Name="Box" Width="18" Height="18" CornerRadius="4"
-                                    Background="#0B1418" BorderBrush="#1C2E37" BorderThickness="1.5"
+                            <Border x:Name="Box" Width="17" Height="17" CornerRadius="4"
+                                    Background="#D1D5DB" BorderThickness="0"
                                     Margin="0,0,10,0">
                                 <Path x:Name="CheckMark" Width="10" Height="10" Stretch="Uniform"
-                                      Fill="#00E5FF" Visibility="Collapsed"
+                                      Fill="White" Visibility="Collapsed"
                                       Data="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
                             </Border>
                             <ContentPresenter VerticalAlignment="Center"/>
@@ -129,24 +129,26 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
-                                <Setter TargetName="Box" Property="BorderBrush" Value="#00B4D8"/>
-                                <Setter TargetName="Box" Property="Background" Value="#142C33"/>
+                                <Setter TargetName="Box" Property="Background" Value="#0F766E"/>
                             </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Box" Property="BorderBrush" Value="#00E5FF"/>
-                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                    <Condition Property="IsChecked" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Box" Property="Background" Value="#9CA3AF"/>
+                            </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- Dark ToolTip -->
+        <!-- High-Contrast ToolTip -->
         <Style TargetType="{x:Type ToolTip}">
-            <Setter Property="Background" Value="#111D23"/>
+            <Setter Property="Background" Value="#111827"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#00B4D8"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="10,6"/>
         </Style>
     </Application.Resources>

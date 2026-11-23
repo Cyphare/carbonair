@@ -31,22 +31,7 @@ namespace CarbonAirWpf
 
         private void InitializeAndUpdateDbStatus()
         {
-            var (success, message) = _dbHelper.InitializeDatabase();
-            string provider = AppConfigManager.Current.Database.Provider;
-
-            if (success)
-            {
-                dotDbStatus.Fill = new SolidColorBrush(Color.FromRgb(0x2E, 0xCC, 0x71));
-                txtDbStatusPill.Text = $"DB: {provider} (Siap)";
-                txtDbStatusPill.Foreground = new SolidColorBrush(Color.FromRgb(0xA0, 0xB2, 0xBC));
-            }
-            else
-            {
-                dotDbStatus.Fill = new SolidColorBrush(Color.FromRgb(0xE7, 0x4C, 0x3C));
-                txtDbStatusPill.Text = $"DB: {provider} (Error)";
-                txtDbStatusPill.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0x6B, 0x6B));
-                txtDbStatusPill.ToolTip = message;
-            }
+            _dbHelper.InitializeDatabase();
         }
 
         private void InputField_KeyDown(object sender, KeyEventArgs e)
@@ -136,7 +121,7 @@ namespace CarbonAirWpf
         {
             panelLogin.Visibility = Visibility.Collapsed;
             panelRegister.Visibility = Visibility.Visible;
-            txtAuthSubtitle.Text = "Buat akun CarbonAir baru";
+            txtAuthTitle.Text = "Buat Akun";
         }
 
         private void SwitchToLogin_Click(object sender, MouseButtonEventArgs e)
@@ -148,7 +133,7 @@ namespace CarbonAirWpf
         {
             panelRegister.Visibility = Visibility.Collapsed;
             panelLogin.Visibility = Visibility.Visible;
-            txtAuthSubtitle.Text = "Masuk ke akun Anda";
+            txtAuthTitle.Text = "CarbonAir";
         }
 
         private void btnOpenDbConfig_Click(object sender, RoutedEventArgs e)

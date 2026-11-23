@@ -1,6 +1,5 @@
 using System;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Threading;
 using CarbonAirWpf.Models;
 
@@ -19,20 +18,6 @@ namespace CarbonAirWpf
             txtAlertMessage.Text = string.IsNullOrWhiteSpace(data.HealthAdvice)
                 ? "Kualitas udara melebihi ambang batas aman. Gunakan masker pelindung saat beraktivitas di luar ruangan."
                 : data.HealthAdvice;
-
-            try
-            {
-                var accent = (Color)ColorConverter.ConvertFromString(data.ColorHex);
-                var brush = new SolidColorBrush(accent);
-                borderContainer.BorderBrush = brush;
-                borderAqiBadge.BorderBrush = brush;
-                iconAlert.Fill = brush;
-                txtAlertAqi.Foreground = brush;
-            }
-            catch
-            {
-                // Keep default warning red palette
-            }
 
             _autoCloseTimer = new DispatcherTimer
             {
